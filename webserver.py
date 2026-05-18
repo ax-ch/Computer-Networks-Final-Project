@@ -11,7 +11,7 @@ def handle_tcp_client(client_socket, client_address):
     print(f"[TCP] New connection from {client_address}")
     
     try:
-        request = client_socket.recv(1024).decode('utf-8')
+        request = client_socket.recv(4096).decode('utf-8')
         
         if not request:
             return

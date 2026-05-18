@@ -42,8 +42,14 @@ def handle_client(client_socket, client_address):
 
     except ConnectionRefusedError:
         print("[PROXY] ERROR: Web server is down! Sending 502 Bad Gateway.")
-        error_msg = "HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\n\r\n<h1>502 Bad Gateway</h1>"
-        client_socket.sendall(error_msg.encode('utf-8'))
+        error_body = "<h1>502 Bad Gateway</h1><p>The web server is offline.</p>"
+        error_msg = (
+            "HTTP/1.1 502 Bad Gateway\r\n"
+            "Content-Type: text/html; charset=utf-8\r\n"
+            f"Content-Length: {len(error_body.encode('utf-8'))}\r\n"
+            "Connection: close\r\n\r\n"
+        )
+        client_socket.sendall((error_msg + error_body).encode('utf-8'))
 
     except Exception as e:
         print(f"[PROXY] General Error: {e}")
