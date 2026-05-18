@@ -45,3 +45,19 @@ A previous execution of webserver.py was terminated abruptly. While the main thr
 RESOLUTION: 
 Used the Windows command line tool `taskkill /F /IM python.exe /T` to force-terminate all hanging Python processes, successfully freeing up Port 9000 for the next execution.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #004
+------------------------------------------------------------------------
+CONTEXT: 
+Phase 2 - Proxy-to-Web Server Forwarding Implementation
+
+SYMPTOM: 
+When accessing the proxy via a web browser, the browser displayed an empty page. The proxy terminal logged: "[WinError 10054] An existing connection was forcibly closed by the remote host."
+
+ROOT CAUSE: 
+A buffer size mismatch. The browser sent an HTTP request larger than 1024 bytes. The Web Server (`webserver.py`) was configured with `recv(1024)`. It read the first 1024 bytes, sent the response, and closed the socket. Because unread data remained in the Windows TCP receive buffer, the OS issued an RST (Reset) packet instead of a FIN packet. This caused the Proxy's `recv()` loop to crash before forwarding the response to the client.
+
+RESOLUTION: 
+Increased the buffer size in `webserver.py` from `1024` to `4096` to ensure the entire HTTP request headers are consumed before the connection is closed.
+------------------------------------------------------------------------
