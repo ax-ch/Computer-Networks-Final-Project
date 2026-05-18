@@ -1,0 +1,36 @@
+========================================================================
+TROUBLESHOOTING LOG - COMPUTER NETWORKS FINAL PROJECT
+TEAM: [Your Name] & [Teammate's Name]
+========================================================================
+
+------------------------------------------------------------------------
+ISSUE #001
+------------------------------------------------------------------------
+CONTEXT: 
+Phase 0 - Workspace & Repository Initialization
+
+SYMPTOM: 
+During the initial 'git push' to sync the provided HTML assets, the terminal threw a warning: "File assets/osi.mp4 is 54.67 MB; this is larger than GitHub's recommended maximum... GH001: Large files detected."
+
+ROOT CAUSE: 
+GitHub has a soft limit of 50 MB per file, triggering a Git LFS (Large File Storage) warning prompt. However, the hard limit blocking uploads is 100 MB. 
+
+RESOLUTION: 
+Verified that the file push actually succeeded despite the warning. Decided to bypass Git LFS configuration to avoid overcomplicating the repository setup, as the file size (54.67 MB) remained safely under the strict 100 MB block limit.
+
+------------------------------------------------------------------------
+ISSUE #002
+------------------------------------------------------------------------
+CONTEXT: 
+Phase 1 - Web Server Setup (TCP Socket Testing)
+
+SYMPTOM: 
+When testing the initial TCP web server at `localhost:8000` via a web browser (Firefox), the expected dummy text ("Hello from TCP Server!") flashed briefly on the screen, followed immediately by an error page stating: "localhost:8000 sent back an empty page."
+
+ROOT CAUSE: 
+1. Missing Headers: The initial socket response lacked a `Content-Length` header. Because the socket was closed immediately after sending, the browser assumed the connection crashed mid-transmission.
+2. Ghost Requests: The browser automatically sent a secondary background request for `GET /favicon.ico`. The server blindly responded to this image request with the same HTML text string, confusing the browser's parser.
+
+RESOLUTION: 
+Updated the `handle_tcp_client` function in `webserver.py` to construct a fully compliant HTTP/1.1 response. Explicitly calculated and added the `Content-Length` header based on the byte size of the payload, and added a `Connection: close` header to cleanly signal the end of the transmission to the browser.
+------------------------------------------------------------------------
