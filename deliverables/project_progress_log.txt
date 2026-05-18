@@ -1,0 +1,45 @@
+========================================================================
+PROJECT PROGRESS LOG
+COMPUTER NETWORKS FINAL PROJECT (2-PERSON TEAM)
+========================================================================
+
+[OVERALL PROJECT PLAN & STATUS]
+Phase 1: Web Server Implementation (TCP & UDP) -------------- [COMPLETED]
+Phase 2: Proxy Server Implementation (Forwarding & Caching) - [COMPLETED]
+Phase 3: Client Implementation (TCP HTTP & UDP QoS) --------- [PENDING]
+Phase 4: Multi-client Concurrency Testing ------------------- [PENDING]
+Phase 5: QoS & Wireshark Analysis --------------------------- [PENDING]
+Phase 6: Final Documentation & Presentation ----------------- [PENDING]
+
+[SESSION ACCOMPLISHMENTS - DETAILED NOTES]
+
+1. Repository & Workspace Initialization
+- Established a strict, flat directory structure compliant with project guidelines using exactly three main Python files [cite: 40-44].
+- Migrated provided HTML assets directly to the root directory alongside `webserver.py` to prevent pathing errors[cite: 211, 212].
+- Initialized a `deliverables/` directory to isolate documentation, logs, and future Wireshark captures[cite: 365, 371].
+
+2. Role Distribution Setup
+- Configured architecture for a 2-person group: `webserver.py` and `proxy.py` are hosted on the same device (Laptop A) but executed as independent processes on different ports[cite: 181, 182].
+
+3. Web Server Implementation (`webserver.py`)
+- Built a TCP server on port 8000 and a UDP echo server on port 9000 using the native `socket` module[cite: 216, 225].
+- Implemented a thread-per-connection concurrency model for handling multiple simultaneous connections[cite: 227].
+- Built HTTP GET parsing logic to sanitize requested paths and serve HTML files as binary (`rb`)[cite: 217].
+- Configured mandatory error handling: returns `HTTP/1.1 200 OK` for successful requests and `404 Not Found` for missing files[cite: 218, 222].
+- Implemented mandatory logging requirements (client IP, file path, timestamp, status code)[cite: 223].
+- *Architecture Note:* Increased TCP receive buffer (`recv`) from 1024 to 4096 to prevent socket crashes (`WinError 10054`) caused by large browser headers.
+
+4. Proxy Server Implementation (`proxy.py`)
+- Built a TCP proxy server on port 8080 to act as the mandatory intermediary between the client and web server[cite: 229, 230].
+- Successfully implemented local file caching mechanisms:
+    - Cache HIT: Evaluates path, detects existing local file in `cache/`, and serves directly to client (bypassing web server)[cite: 233].
+    - Cache MISS: Forwards request to port 8000, receives response, stores it in local `cache/`, and returns data to client[cite: 234].
+- Added error handling to return `502 Bad Gateway` with compliant HTTP headers if the web server process is offline or unreachable[cite: 238].
+- Implemented threading to handle multiple clients simultaneously[cite: 240].
+
+[NEXT STEPS FOR UPCOMING SESSION]
+- Initialize `client.py` file structure.
+- Build TCP Mode (`-mode tcp`): Send HTTP GET requests to the proxy (port 8080) and display HTML response in terminal [cite: 254-256].
+- Build UDP Mode (`-mode udp`): Send 10 UDP pings to the web server (port 9000) with a 1-second timeout [cite: 257-260].
+- Implement QoS math in `client.py` to calculate min/avg/max RTT, packet loss (%), and jitter[cite: 262].
+========================================================================
