@@ -29,3 +29,19 @@ ROOT CAUSE:
 RESOLUTION: 
 Updated the `handle_tcp_client` function in `webserver.py` to construct a fully compliant HTTP/1.1 response. Explicitly calculated and added the `Content-Length` header based on the byte size of the payload, and added a `Connection: close` header to cleanly signal the end of the transmission to the browser.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #003
+------------------------------------------------------------------------
+CONTEXT: 
+Phase 1/2 - Server Testing & Port Binding
+
+SYMPTOM: 
+When launching webserver.py, the terminal threw an OSError: "[WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted" specifically crashing on the udp_socket.bind() function for port 9000.
+
+ROOT CAUSE: 
+A previous execution of webserver.py was terminated abruptly. While the main thread closed, the daemonized UDP server thread remained active in the background as an orphaned process, keeping Port 9000 bound and locked.
+
+RESOLUTION: 
+Used the Windows command line tool `taskkill /F /IM python.exe /T` to force-terminate all hanging Python processes, successfully freeing up Port 9000 for the next execution.
+------------------------------------------------------------------------
