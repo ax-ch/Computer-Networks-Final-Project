@@ -2,7 +2,6 @@ import socket
 import threading
 import os
 
-# CONFIG
 HOST = '0.0.0.0' # listen on all available LAN/WiFi
 TCP_PORT = 8000
 UDP_PORT = 9000
