@@ -1,5 +1,6 @@
 import socket
 import threading
+import os
 
 HOST = '0.0.0.0'
 PROXY_PORT = 8080
@@ -16,9 +17,27 @@ def handle_client(client_socket, client_address):
             
         print(f"[PROXY] Forwarding request for {client_address[0]}...")
 
-        # -------------------------------------------------------------
-        # TODO for later: Check if request is already in our local cache!
-        # -------------------------------------------------------------
+        try:
+            request_str = request.decode('utf-8')
+            requested_path = request_str.split('\r\n')[0].split(' ')[1]
+            if requested_path == '/':
+                requested_path = '/index.html'
+                
+            cache_filename = "cache/" + requested_path.replace('/', '_')
+
+            if os.path.exists(cache_filename):
+                print(f"[PROXY] Cache HIT for {requested_path}")
+                with open(cache_filename, 'rb') as f:
+                    cached_data = f.read()
+
+                client_socket.sendall(cached_data)
+                return 
+                
+            else:
+                print(f"[PROXY] Cache MISS for {requested_path}. Fetching from server...")
+                
+        except Exception as e:
+            print(f"[PROXY] Request parsing error: {e}")
 
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.connect((WEBSERVER_HOST, WEBSERVER_PORT))
@@ -33,9 +52,13 @@ def handle_client(client_socket, client_address):
             else:
                 break
                 
-        # -------------------------------------------------------------
-        # TODO for later: Save 'response' to a local cache file
-        # -------------------------------------------------------------
+        if not os.path.exists('cache'):
+            os.makedirs('cache')
+            
+        with open(cache_filename, 'wb') as f:
+            f.write(response)
+            
+        print(f"[PROXY] Stored {requested_path} in cache.")
         
         client_socket.sendall(response)
         print("[PROXY] Successfully forwarded response to browser.")
