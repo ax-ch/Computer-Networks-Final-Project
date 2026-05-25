@@ -76,3 +76,78 @@ The TCP connection between the client, proxy, and web server was functioning cor
 
 RESOLUTION:
 To maintain a stable implementation for testing and demonstration, the client code was reverted to the previous working version. The original implementation successfully matched the existing proxy and web server configuration and produced the expected TCP communication flow.
+
+------------------------------------------------------------------------
+ISSUE #006
+------------------------------------------------------------------------
+CONTEXT:
+Command Line Argument Compliance
+
+SYMPTOM:
+The initial client script relied on basic sys.argv indexing, expecting arguments like "normal" or "udp," which violated the strict "-mode tcp" and "-mode udp" constraints outlined in the Final Project Guide.
+
+ROOT CAUSE:
+The initial implementation used basic positional arguments rather than a robust parsing library capable of enforcing specific flags and optional parameters.
+
+RESOLUTION:
+Replaced sys.argv parsing with Python's native argparse library to strictly enforce the required "-mode" flags and optional "-file" arguments.
+
+------------------------------------------------------------------------
+ISSUE #007
+------------------------------------------------------------------------
+CONTEXT:
+UDP QoS Payload Formatting
+
+SYMPTOM:
+The UDP tester was sending a basic "PING {i+1}" payload, which did not meet the exact specification required for the QoS echo server.
+
+ROOT CAUSE:
+The packet construction logic was missing the transmission start time variable and was formatting the string incorrectly based on the strict guide parameters.
+
+RESOLUTION:
+Updated the packet construction logic to include the transmission start time, formatting it exactly as "Ping <seq> <timestamp>".
+
+------------------------------------------------------------------------
+ISSUE #008
+------------------------------------------------------------------------
+CONTEXT:
+UDP QoS Statistics Calculation
+
+SYMPTOM:
+The QoS logic successfully calculated Min/Avg/Max RTT and Packet Loss, but completely omitted the Jitter metric required for the final evaluation.
+
+ROOT CAUSE:
+The initial script draft lacked the mathematical logic required to calculate the standard deviation of consecutive RTT differences.
+
+RESOLUTION:
+Imported the built-in statistics module and implemented logic to calculate the standard deviation of consecutive RTT differences (RTT_i - RTT_i-1) using statistics.stdev().
+
+------------------------------------------------------------------------
+ISSUE #009
+------------------------------------------------------------------------
+CONTEXT:
+UDP Socket Constraints
+
+SYMPTOM:
+The socket timeout was originally set to TIMEOUT = 2, violating the project constraint that dictates a maximum 1-second timeout per packet.
+
+ROOT CAUSE:
+Incorrect timeout constant configuration during the initial drafting phase.
+
+RESOLUTION:
+Adjusted the UDP socket configuration to udp_socket.settimeout(1.0) to ensure strict compliance with the testing parameters.
+
+------------------------------------------------------------------------
+ISSUE #010
+------------------------------------------------------------------------
+CONTEXT:
+TCP HTTP Client Output Verification
+
+SYMPTOM:
+The TCP client was receiving data chunks and appending them to a response variable, but only printed "[CLIENT] Response received" instead of outputting the actual requested file.
+
+ROOT CAUSE:
+The script successfully accumulated the byte data but lacked a print statement to decode and output the final response payload to the standard output.
+
+RESOLUTION:
+Added print(response.decode('utf-8')) to the end of the TCP data loop to ensure the HTML is properly rendered in the terminal for grading verification.
