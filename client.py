@@ -1,170 +1,86 @@
 import socket
-import threading
+import argparse
 import time
-import statistics
-import sys
 
-# CONFIGURATION
-
-SERVER_HOST = '127.0.0.1'
-UDP_PORT = 9000
-
-PROXY_HOST = '127.0.0.1'
+# --- Network Configuration ---
+PROXY_IP = '127.0.0.1'
 PROXY_PORT = 8080
+WEBSERVER_IP = '127.0.0.1'
+WEBSERVER_PORT = 9000
+BUFFER_SIZE = 4096
 
-PACKET_COUNT = 10
-TIMEOUT = 2
-
-# READ MODE
-
-mode = "normal"
-
-if len(sys.argv) > 1:
-    mode = sys.argv[1]
-
-# TCP CLIENT FUNCTION
-
-def tcp_client():
-
+def run_tcp_mode(filename):
+    """
+    Phase 1: TCP Mode (HTTP Client)
+    Sends a GET request to the Proxy Server and prints the response.
+    """
+    print(f"[*] Starting TCP Mode. Requesting '{filename}' via Proxy ({PROXY_IP}:{PROXY_PORT})...\n")
+    
+    # Initialize TCP socket (SOCK_STREAM)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    try:
+        # Connect to the proxy
+        client_socket.connect((PROXY_IP, PROXY_PORT))
+        
+        # Construct standard HTTP/1.1 GET request
+        # Note: The double CRLF (\r\n\r\n) is mandatory to signal the end of the HTTP header
+        request = f"GET {filename} HTTP/1.1\r\nHost: {PROXY_IP}:{PROXY_PORT}\r\nConnection: close\r\n\r\n"
+        
+        # Send the encoded request
+        client_socket.sendall(request.encode('utf-8'))
+        
+        # Receive the response in chunks
+        response = b""
+        while True:
+            data = client_socket.recv(BUFFER_SIZE)
+            if not data:
+                break
+            response += data
+            
+        # Display the raw response in the terminal
+        print(response.decode('utf-8'))
+        
+    except ConnectionRefusedError:
+        print(f"[-] Connection refused. Ensure the Proxy Server is running on port {PROXY_PORT}.")
+    except Exception as e:
+        print(f"[-] An error occurred: {e}")
+    finally:
+        client_socket.close()
+        print("\n[*] TCP connection closed.")
 
-    client_socket.connect((PROXY_HOST, PROXY_PORT))
+def run_udp_mode():
+    """
+    Phase 2: UDP Mode (QoS Tester)
+    Sends 10 ping packets to the Web Server and calculates QoS metrics.
+    """
+    print(f"[*] Starting UDP Mode. Pinging Web Server ({WEBSERVER_IP}:{WEBSERVER_PORT})...\n")
+    
+    # Initialize UDP socket (SOCK_DGRAM)
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    
+    # Requirement: 1-second timeout per packet
+    udp_socket.settimeout(1.0)
+    
+    # TODO: Implement the 10-packet loop here
+    # 1. Generate timestamp (time.time())
+    # 2. Format payload: f"Ping {seq} {timestamp}"
+    # 3. udp_socket.sendto(...)
+    # 4. Measure RTT on successful recvfrom(), handle socket.timeout exception
+    # 5. Calculate and print Min/Avg/Max RTT, Jitter, and Packet Loss
+    
+    print("[!] UDP QoS logic needs to be implemented.")
+    udp_socket.close()
 
-    request  = "GET /page.html HTTP/1.1\r\n"
-    request += f"Host: {PROXY_HOST}\r\n"
-    request += "Connection: close\r\n\r\n"
+if __name__ == '__main__':
+    # Set up command line arguments
+    parser = argparse.ArgumentParser(description="Client module for Client-Proxy-Server architecture.")
+    parser.add_argument('-mode', choices=['tcp', 'udp'], required=True, help="Operating mode: 'tcp' for HTTP or 'udp' for QoS Ping")
+    parser.add_argument('-file', default='/index.html', help="File to request in TCP mode (default: /index.html)")
+    
+    args = parser.parse_args()
 
-    client_socket.sendall(request.encode())
-
-    response = b""
-
-    while True:
-        chunk = client_socket.recv(4096)
-
-        if not chunk:
-            break
-
-        response += chunk
-
-    print("[CLIENT] Response received")
-
-    client_socket.close()
-
-# UDP QoS FUNCTION
-
-def udp_qos_client():
-
-    # Store RTT values
-    rtt_list = []
-
-    # Count lost packets
-    lost_packets = 0
-
-    # Create UDP socket
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    # Set timeout
-    client_socket.settimeout(TIMEOUT)
-
-    print("=" * 50)
-    print("UDP QoS Client Started")
-    print("=" * 50)
-
-    for i in range(PACKET_COUNT):
-
-        message = f"PING {i+1}"
-
-        try:
-            # Record start time
-            start_time = time.time()
-
-            # Send packet
-            client_socket.sendto(message.encode(), (SERVER_HOST, UDP_PORT))
-
-            print(f"[SENT] {message}")
-
-            # Receive echo response
-            data, server_addr = client_socket.recvfrom(1024)
-
-            # Record end time
-            end_time = time.time()
-
-            # Calculate RTT in milliseconds
-            rtt = (end_time - start_time) * 1000
-
-            rtt_list.append(rtt)
-
-            print(f"[RECEIVED] {data.decode()}")
-
-            print(f"RTT: {rtt:.2f} ms\n")
-
-        except socket.timeout:
-
-            print(f"[TIMEOUT] Packet {i+1} lost\n")
-
-            lost_packets += 1
-
-    # FINAL STATISTICS
-
-    print("=" * 50)
-    print("FINAL QoS STATISTICS")
-    print("=" * 50)
-
-    received_packets = PACKET_COUNT - lost_packets
-
-    loss_percent = (lost_packets / PACKET_COUNT) * 100
-
-    print(f"Packets Sent     : {PACKET_COUNT}")
-    print(f"Packets Received : {received_packets}")
-    print(f"Packets Lost     : {lost_packets}")
-    print(f"Packet Loss      : {loss_percent:.2f}%")
-
-    if rtt_list:
-
-        print(f"\nMinimum RTT : {min(rtt_list):.2f} ms")
-
-        print(f"Average RTT : {statistics.mean(rtt_list):.2f} ms")
-
-        print(f"Maximum RTT : {max(rtt_list):.2f} ms")
-
-    else:
-        print("\nNo RTT data available")
-
-    client_socket.close()
-
-# MODE SELECTION
-
-if mode == "normal":
-
-    print("NORMAL TCP CLIENT MODE")
-
-    tcp_client()
-
-elif mode == "multi":
-
-    print("=" * 50)
-    print("MULTI CLIENT SIMULATION")
-    print("=" * 50)
-
-    threads = []
-
-    for i in range(5):
-
-        t = threading.Thread(target=tcp_client)
-
-        threads.append(t)
-
-        t.start()
-
-    for t in threads:
-        t.join()
-
-    print("\nAll client instances completed.")
-
-elif mode == "udp":
-
-    udp_qos_client()
-
-else:
-
-    print("Invalid mode")
+    if args.mode == 'tcp':
+        run_tcp_mode(args.file)
+    elif args.mode == 'udp':
+        run_udp_mode()
