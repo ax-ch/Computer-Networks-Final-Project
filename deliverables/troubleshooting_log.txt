@@ -61,3 +61,18 @@ A buffer size mismatch. The browser sent an HTTP request larger than 1024 bytes.
 RESOLUTION: 
 Increased the buffer size in `webserver.py` from `1024` to `4096` to ensure the entire HTTP request headers are consumed before the connection is closed.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #005
+------------------------------------------------------------------------
+CONTEXT:
+TCP Client Testing and Code Revision
+
+SYMPTOM:
+After implementing a revised version of client.py with additional response display and QoS calculations, the terminal displayed an "HTTP/1.1 404 Not Found" response during TCP testing.
+
+ROOT CAUSE:
+The TCP connection between the client, proxy, and web server was functioning correctly because the client still received a valid HTTP response. However, the revised implementation introduced a mismatch between the requested resource path and the existing server resource configuration, causing the web server to return a 404 response.
+
+RESOLUTION:
+To maintain a stable implementation for testing and demonstration, the client code was reverted to the previous working version. The original implementation successfully matched the existing proxy and web server configuration and produced the expected TCP communication flow.
