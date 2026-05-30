@@ -108,6 +108,7 @@ def start_udp_server():
         try:
             data, client_address = udp_socket.recvfrom(1024)
             if data:
+                print(f"[{get_timestamp()}] [UDP] Echoed packet back to {client_address[0]}")
                 udp_socket.sendto(data, client_address)
         except Exception as e:
             print(f"[{get_timestamp()}] [UDP] Error: {e}")
