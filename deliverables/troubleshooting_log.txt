@@ -275,3 +275,19 @@ The `start_udp_server()` loop correctly implemented `udp_socket.sendto()` to bou
 RESOLUTION:
 Added an explicit `print(f"[{get_timestamp()}] [UDP] Echoed packet back to {client_address[0]}")` statement immediately before sending the UDP packet back to the client. This provides visual proof in the server terminal that the QoS pings are successfully reaching the server and being processed.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #019
+------------------------------------------------------------------------
+CONTEXT:
+Web Server Browser Verification (MIME Types)
+
+SYMPTOM:
+When verifying the architecture via a standard web browser (e.g., Chrome), the HTML text loaded successfully, but all CSS styling and images were broken/ignored by the browser.
+
+ROOT CAUSE:
+The web server was hardcoded to send a `Content-Type: text/html` HTTP header for every file requested. When the browser requested `style.css` or `iflab.png`, the server falsely identified them as HTML, causing the browser's strict security protocols to reject the mismatched files.
+
+RESOLUTION:
+Imported the built-in Python `mimetypes` library. Modified the HTTP 200 OK response block to dynamically use `mimetypes.guess_type(target_file)` to inject the correct `Content-Type` header (e.g., `text/css` or `image/png`) based on the requested file extension. Cleared the proxy cache to ensure the new, corrected headers were forwarded to the client.
+------------------------------------------------------------------------
