@@ -1,6 +1,7 @@
 import socket
 import threading
 import os
+import mimetypes
 from datetime import datetime
 
 HOST = '0.0.0.0'
@@ -49,9 +50,16 @@ def handle_tcp_client(client_socket, client_address):
             with open(target_file, 'rb') as file:
                 file_content = file.read()
             
+            # mimetypes
+            content_type, _ = mimetypes.guess_type(target_file)
+            if not content_type:
+                content_type = 'text/html; charset=utf-8'
+            elif content_type == 'text/html':
+                content_type = 'text/html; charset=utf-8'
+
             headers = (
                 "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html; charset=utf-8\r\n"
+                f"Content-Type: {content_type}\r\n"
                 f"Content-Length: {len(file_content)}\r\n"
                 "Connection: close\r\n\r\n"
             )
@@ -114,6 +122,7 @@ def start_udp_server():
             print(f"[{get_timestamp()}] [UDP] Error: {e}")
 
 if __name__ == "__main__":
+    # RESTORED RUBRIC STRING
     print(f"[{get_timestamp()}] [*] Server running on port {TCP_PORT}/{UDP_PORT}")
     print(f"[{get_timestamp()}] [*] Serving files from: {BASE_DIR}")
 
