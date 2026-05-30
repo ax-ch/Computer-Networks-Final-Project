@@ -6,40 +6,38 @@ COMPUTER NETWORKS FINAL PROJECT (2-PERSON TEAM)
 [OVERALL PROJECT PLAN & STATUS]
 Phase 1: Web Server Implementation (TCP & UDP) -------------- [COMPLETED]
 Phase 2: Proxy Server Implementation (Forwarding & Caching) - [COMPLETED]
-Phase 3: Client Implementation (TCP HTTP & UDP QoS) --------- [PENDING]
-Phase 4: Multi-client Concurrency Testing ------------------- [PENDING]
-Phase 5: QoS & Wireshark Analysis --------------------------- [PENDING]
-Phase 6: Final Documentation & Presentation ----------------- [PENDING]
+Phase 3: Client Implementation (TCP HTTP & UDP QoS) --------- [COMPLETED]
+Phase 4: Multi-client Concurrency Testing ------------------- [COMPLETED]
+Phase 5: QoS & Wireshark Analysis --------------------------- [COMPLETED]
+Phase 6: Final Documentation & Presentation ----------------- [IN PROGRESS]
 
 [SESSION ACCOMPLISHMENTS - DETAILED NOTES]
 
-1. Repository & Workspace Initialization
-- Established a strict, flat directory structure compliant with project guidelines using exactly three main Python files [cite: 40-44].
-- Migrated provided HTML assets directly to the root directory alongside `webserver.py` to prevent pathing errors[cite: 211, 212].
-- Initialized a `deliverables/` directory to isolate documentation, logs, and future Wireshark captures[cite: 365, 371].
+1. Pre-Flight Architecture Review (Localhost)
+- Successfully verified full system operation via localhost loopback (127.0.0.1). 
+- Tested and confirmed standard TCP HTTP requests via terminal and standard web browsers.
+- Simulated and resolved the Cache Race Condition using a global `threading.Lock()` to prevent data corruption during multi-client concurrent tests.
 
-2. Role Distribution Setup
-- Configured architecture for a 2-person group: `webserver.py` and `proxy.py` are hosted on the same device (Laptop A) but executed as independent processes on different ports[cite: 181, 182].
+2. Code Optimization & Rubric Compliance Fixes
+- Addressed Browser Verification Failure (MIME Types): Integrated the built-in `mimetypes` library into `webserver.py` to dynamically set `Content-Type` headers (e.g., `text/css`, `image/png`), ensuring correct rendering in web browsers.
+- Re-verified terminal output strings to ensure exact compliance with the rubric constraints (e.g., matching the exact "[*] Server running..." phrasing).
 
-3. Web Server Implementation (`webserver.py`)
-- Built a TCP server on port 8000 and a UDP echo server on port 9000 using the native `socket` module[cite: 216, 225].
-- Implemented a thread-per-connection concurrency model for handling multiple simultaneous connections[cite: 227].
-- Built HTTP GET parsing logic to sanitize requested paths and serve HTML files as binary (`rb`)[cite: 217].
-- Configured mandatory error handling: returns `HTTP/1.1 200 OK` for successful requests and `404 Not Found` for missing files[cite: 218, 222].
-- Implemented mandatory logging requirements (client IP, file path, timestamp, status code)[cite: 223].
-- *Architecture Note:* Increased TCP receive buffer (`recv`) from 1024 to 4096 to prevent socket crashes (`WinError 10054`) caused by large browser headers.
+3. Wireshark Capture Preparation
+- Configured Wireshark for localhost loopback testing and established the required Display Filter (`tcp.port == 8000 || tcp.port == 8080 || udp.port == 9000`).
+- Successfully executed a solo practice run, verifying the visibility of the TCP 3-Way Handshake, the HTTP GET/200 OK flow, and the UDP QoS Ping payloads. 
 
-4. Proxy Server Implementation (`proxy.py`)
-- Built a TCP proxy server on port 8080 to act as the mandatory intermediary between the client and web server[cite: 229, 230].
-- Successfully implemented local file caching mechanisms:
-    - Cache HIT: Evaluates path, detects existing local file in `cache/`, and serves directly to client (bypassing web server)[cite: 233].
-    - Cache MISS: Forwards request to port 8000, receives response, stores it in local `cache/`, and returns data to client[cite: 234].
-- Added error handling to return `502 Bad Gateway` with compliant HTTP headers if the web server process is offline or unreachable[cite: 238].
-- Implemented threading to handle multiple clients simultaneously[cite: 240].
+4. Final Documentation (PDF Report Drafting)
+- Consolidated 19 technical issues down to the Top 5 most advanced challenges for the Troubleshooting Section (Directory Traversal, Cache Locking, 504 Timeouts, Throughput Math, MIME Types).
+- Collaborated to integrate these Top 5 issues into the formal PDF report skeleton (Table 5.1).
+- Extensively revised Section 2 (System Implementation) and Section 5 (Conclusion & Recommendations) to explicitly include mandatory rubric keywords (Socket Mechanisms, Thread Management, Error Handling Strategies).
+- Established a placeholder structure for the remaining QoS Analysis and Wireshark sections, including instructions to generate a Cache HIT vs. Cache MISS comparison chart.
 
-[NEXT STEPS FOR UPCOMING SESSION]
-- Initialize `client.py` file structure.
-- Build TCP Mode (`-mode tcp`): Send HTTP GET requests to the proxy (port 8080) and display HTML response in terminal [cite: 254-256].
-- Build UDP Mode (`-mode udp`): Send 10 UDP pings to the web server (port 9000) with a 1-second timeout [cite: 257-260].
-- Implement QoS math in `client.py` to calculate min/avg/max RTT, packet loss (%), and jitter[cite: 262].
+[NEXT STEPS FOR DEMO DAY (WITH TEAMMATE)]
+- Meet up and connect both laptops to the same LAN (Wi-Fi or Hotspot).
+- Disable Windows Defender Firewall (Private Network) on the Host laptop to allow inbound traffic on ports 8000, 8080, and 9000.
+- Execute the 8-Scene "Final Demo Script" while screen recording.
+- Extract the required Wireshark screenshots from the video capture.
+- Copy the final UDP QoS statistics (RTT, Jitter, Throughput) from the Client terminal into the PDF.
+- Build the "Cache HIT vs. MISS" response time bar chart in the PDF.
+- REMOVE placeholder instruction text from the final PDF and submit!
 ========================================================================
