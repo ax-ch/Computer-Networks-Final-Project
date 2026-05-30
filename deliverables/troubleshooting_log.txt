@@ -151,3 +151,49 @@ The script successfully accumulated the byte data but lacked a print statement t
 
 RESOLUTION:
 Added print(response.decode('utf-8')) to the end of the TCP data loop to ensure the HTML is properly rendered in the terminal for grading verification.
+
+------------------------------------------------------------------------
+ISSUE #011
+------------------------------------------------------------------------
+CONTEXT:
+Web Server Error Handling and Logging Requirements
+
+SYMPTOM:
+The server lacked handling for 500 Internal Server Errors and the terminal logs did not include timestamps, which are explicitly required by the project guide.
+
+ROOT CAUSE:
+The catch-all exception block only dropped the connection without sending an HTTP failure response, and the `print()` statements relied on basic string formatting without utilizing the `datetime` module.
+
+RESOLUTION:
+Added a `get_timestamp()` helper function using `datetime.now()` to prepend formatted times to all console logs. Expanded the generic `except Exception as e:` block to encode and send an `HTTP/1.1 500 Internal Server Error` payload before closing the socket.
+
+------------------------------------------------------------------------
+ISSUE #012
+------------------------------------------------------------------------
+CONTEXT:
+Web Server Path Sanitization and Directory Traversal 
+
+SYMPTOM:
+The server was vulnerable to malicious directory traversal (e.g., escaping the base directory via `../../`) and could fail across different operating systems due to varying slash directions.
+
+ROOT CAUSE:
+The requested path was being constructed using raw string manipulation (stripping the leading slash) instead of utilizing the `os` module for robust path normalization.
+
+RESOLUTION:
+Implemented `os.path.abspath` and `os.path.normpath` to sanitize incoming requests against a `BASE_DIR`. To strictly comply with the guide's grading rubric without introducing unrequested error codes, directory traversal attempts were configured to cleanly trigger a `raise FileNotFoundError`, routing the malicious request directly to the standard 404 response block.
+
+------------------------------------------------------------------------
+ISSUE #013
+------------------------------------------------------------------------
+CONTEXT:
+Web Server Grading Rubric Compliance
+
+SYMPTOM:
+The server functioned correctly, but the console output text did not strictly match the exact phrasing required by the "Testing Scenarios" grading table. 
+
+ROOT CAUSE:
+Standard, generic informational prints were used for startup and connection events instead of the specific strings the grader will be searching for.
+
+RESOLUTION:
+Updated the main execution block to print the exact expected string: "[*] Server running on port 8000/9000, thread pool ready". Additionally, added a specific log inside the TCP handler stating "Thread created for new connection..." to provide explicit proof of multithreading per the rubric's concurrent load check.
+------------------------------------------------------------------------
