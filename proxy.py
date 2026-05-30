@@ -1,21 +1,31 @@
 import socket
 import threading
 import os
+import time
+from datetime import datetime
 
 HOST = '0.0.0.0'
 PROXY_PORT = 8080
 WEBSERVER_HOST = '127.0.0.1' 
 WEBSERVER_PORT = 8000
 
+cache_lock = threading.Lock()
+
+def get_timestamp():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
 def handle_client(client_socket, client_address):
-    print(f"\n[PROXY] Connection received from {client_address}")
+    start_time = time.time()
+    
+    print(f"[{get_timestamp()}] [PROXY] Connection received from {client_address[0]}")
+    
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.settimeout(5.0)
     
     try:
         request = client_socket.recv(4096)
         if not request:
             return
-            
-        print(f"[PROXY] Forwarding request for {client_address[0]}...")
 
         try:
             request_str = request.decode('utf-8')
@@ -26,22 +36,23 @@ def handle_client(client_socket, client_address):
             cache_filename = "cache/" + requested_path.replace('/', '_')
 
             if os.path.exists(cache_filename):
-                print(f"[PROXY] Cache HIT for {requested_path}")
                 with open(cache_filename, 'rb') as f:
                     cached_data = f.read()
 
                 client_socket.sendall(cached_data)
+
+                elapsed_ms = (time.time() - start_time) * 1000
+                print(f"[{get_timestamp()}] [PROXY] {client_address[0]} requested {requested_path} - Cache HIT - Response Time: {elapsed_ms:.2f}ms")
                 return 
                 
             else:
-                print(f"[PROXY] Cache MISS for {requested_path}. Fetching from server...")
+                print(f"[{get_timestamp()}] [PROXY] {client_address[0]} requested {requested_path} - Cache MISS. Fetching from server...")
                 
         except Exception as e:
-            print(f"[PROXY] Request parsing error: {e}")
+            print(f"[{get_timestamp()}] [PROXY] Request parsing error: {e}")
+            return
 
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.connect((WEBSERVER_HOST, WEBSERVER_PORT))
-        
         server_socket.sendall(request)
         
         response = b""
@@ -54,17 +65,18 @@ def handle_client(client_socket, client_address):
                 
         if not os.path.exists('cache'):
             os.makedirs('cache')
+
+        with cache_lock:
+            with open(cache_filename, 'wb') as f:
+                f.write(response)
             
-        with open(cache_filename, 'wb') as f:
-            f.write(response)
-            
-        print(f"[PROXY] Stored {requested_path} in cache.")
-        
         client_socket.sendall(response)
-        print("[PROXY] Successfully forwarded response to browser.")
+        
+        elapsed_ms = (time.time() - start_time) * 1000
+        print(f"[{get_timestamp()}] [PROXY] Successfully forwarded response to {client_address[0]} - Response Time: {elapsed_ms:.2f}ms")
 
     except ConnectionRefusedError:
-        print("[PROXY] ERROR: Web server is down! Sending 502 Bad Gateway.")
+        print(f"[{get_timestamp()}] [PROXY] ERROR: Web server is down! Sending 502 Bad Gateway.")
         error_body = "<h1>502 Bad Gateway</h1><p>The web server is offline.</p>"
         error_msg = (
             "HTTP/1.1 502 Bad Gateway\r\n"
@@ -74,8 +86,19 @@ def handle_client(client_socket, client_address):
         )
         client_socket.sendall((error_msg + error_body).encode('utf-8'))
 
+    except socket.timeout:
+        print(f"[{get_timestamp()}] [PROXY] ERROR: Web server timed out! Sending 504 Gateway Timeout.")
+        error_body = "<h1>504 Gateway Timeout</h1><p>The web server took too long to respond.</p>"
+        error_msg = (
+            "HTTP/1.1 504 Gateway Timeout\r\n"
+            "Content-Type: text/html; charset=utf-8\r\n"
+            f"Content-Length: {len(error_body.encode('utf-8'))}\r\n"
+            "Connection: close\r\n\r\n"
+        )
+        client_socket.sendall((error_msg + error_body).encode('utf-8'))
+
     except Exception as e:
-        print(f"[PROXY] General Error: {e}")
+        print(f"[{get_timestamp()}] [PROXY] General Error with {client_address[0]}: {e}")
         
     finally:
         client_socket.close()
@@ -89,8 +112,8 @@ def start_proxy():
     proxy_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     proxy_socket.bind((HOST, PROXY_PORT))
     proxy_socket.listen(5)
-    
-    print(f"[*] Proxy Server listening on {HOST}:{PROXY_PORT}")
+
+    print(f"[{get_timestamp()}] [*] Proxy listening on port {PROXY_PORT}")
     
     while True:
         client_socket, client_address = proxy_socket.accept()
