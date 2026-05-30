@@ -46,6 +46,9 @@ def run_udp_mode():
     lost_packets = 0
     rtt_list = []
     
+    total_successful_payload = 0
+    test_start_time = time.time()
+    
     for i in range(1, num_packets + 1):
         start_time = time.time()
         message = f"Ping {i} {start_time}"
@@ -58,6 +61,8 @@ def run_udp_mode():
             
             rtt = (end_time - start_time) * 1000
             rtt_list.append(rtt)
+
+            total_successful_payload += len(data)
             
             print(f"[+] Reply from {WEBSERVER_IP}: seq={i} time={rtt:.2f}ms")
             
@@ -66,6 +71,9 @@ def run_udp_mode():
             lost_packets += 1
             
     udp_socket.close()
+
+    test_end_time = time.time()
+    total_test_duration = test_end_time - test_start_time
     
     print("\n--- QoS Ping Statistics ---")
     
@@ -84,9 +92,16 @@ def run_udp_mode():
                 jitter = statistics.stdev(rtt_diffs)
             else:
                 jitter = rtt_diffs[0]
+
+        if total_test_duration > 0:
+            throughput_bps = (total_successful_payload * 8) / total_test_duration
+            throughput_kbps = throughput_bps / 1000
+        else:
+            throughput_kbps = 0.0
                 
         print(f"RTT (ms): Min = {min_rtt:.2f}, Max = {max_rtt:.2f}, Avg = {avg_rtt:.2f}")
         print(f"Jitter (ms): {jitter:.2f}")
+        print(f"Throughput: {throughput_kbps:.2f} kbps")
     else:
         print("No RTT data available (100% packet loss).")
 
