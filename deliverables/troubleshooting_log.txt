@@ -259,3 +259,19 @@ The code lacked variables to measure the total test duration and track the total
 RESOLUTION:
 Added `total_successful_payload` to accumulate the byte size of received echo packets (`len(data)`) and used `time.time()` to measure the `total_test_duration`. Implemented the formula `(total_successful_payload * 8) / total_test_duration` to calculate bits per second, dividing by 1000 to display the final metric in kbps.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #018
+------------------------------------------------------------------------
+CONTEXT:
+Web Server UDP Echo Logging (Optional Enhancement)
+
+SYMPTOM:
+During UDP QoS testing, the web server successfully echoed the packets back to the client, but the server's terminal remained completely silent, providing no visual confirmation of the UDP traffic being handled.
+
+ROOT CAUSE:
+The `start_udp_server()` loop correctly implemented `udp_socket.sendto()` to bounce the payload, but intentionally lacked a `print()` statement to avoid terminal clutter during rapid ping tests.
+
+RESOLUTION:
+Added an explicit `print(f"[{get_timestamp()}] [UDP] Echoed packet back to {client_address[0]}")` statement immediately before sending the UDP packet back to the client. This provides visual proof in the server terminal that the QoS pings are successfully reaching the server and being processed.
+------------------------------------------------------------------------
