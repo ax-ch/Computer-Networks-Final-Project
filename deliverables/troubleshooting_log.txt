@@ -243,3 +243,19 @@ Standard, generic informational prints were used for the startup event instead o
 RESOLUTION:
 Updated the main execution block to print the exact expected string: "[*] Proxy listening on port 8080, multithreading active" to provide explicit proof of compliance per the rubric.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #017
+------------------------------------------------------------------------
+CONTEXT:
+Client QoS Metrics (Throughput Calculation)
+
+SYMPTOM:
+The client script successfully outputted RTT, packet loss, and jitter, but failed to calculate and display the network throughput during the UDP QoS testing phase.
+
+ROOT CAUSE:
+The code lacked variables to measure the total test duration and track the total byte size of the successfully received payloads, which are strictly required to compute throughput according to the project's QoS formula.
+
+RESOLUTION:
+Added `total_successful_payload` to accumulate the byte size of received echo packets (`len(data)`) and used `time.time()` to measure the `total_test_duration`. Implemented the formula `(total_successful_payload * 8) / total_test_duration` to calculate bits per second, dividing by 1000 to display the final metric in kbps.
+------------------------------------------------------------------------
