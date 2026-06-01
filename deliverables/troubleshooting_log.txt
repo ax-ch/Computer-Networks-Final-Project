@@ -291,3 +291,36 @@ The web server was hardcoded to send a `Content-Type: text/html` HTTP header for
 RESOLUTION:
 Imported the built-in Python `mimetypes` library. Modified the HTTP 200 OK response block to dynamically use `mimetypes.guess_type(target_file)` to inject the correct `Content-Type` header (e.g., `text/css` or `image/png`) based on the requested file extension. Cleared the proxy cache to ensure the new, corrected headers were forwarded to the client.
 ------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #020
+------------------------------------------------------------------------
+CONTEXT:
+Phase 4 - Multi-client Concurrency Testing & LAN Setup
+
+SYMPTOM:
+When attempting to connect the client laptop to the host laptop over the local network, the terminal threw an error: "[WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond".
+
+ROOT CAUSE:
+1. Unconfigured IP Addresses: The client and proxy scripts were still attempting to connect to the wrong IP address instead of the host's actual LAN IPv4 address.
+2. Network Firewall/AP Isolation: Windows Defender Firewall was actively blocking incoming socket connections on the required ports (8000, 8080, 9000). Alternatively, the local router was enforcing AP (Access Point) Isolation, preventing peer-to-peer device communication on the same Wi-Fi network.
+
+RESOLUTION:
+Updated the PROXY_IP and WEBSERVER_IP variables in client.py, and the WEBSERVER_HOST in proxy.py to match the host laptop's exact IPv4 address (located via ipconfig under the Wireless LAN adapter). Bypassed the connection block by creating specific Inbound Rules in Windows Defender for TCP (8000, 8080) and UDP (9000). 
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #021
+------------------------------------------------------------------------
+CONTEXT:
+Phase 5 - QoS & Wireshark Analysis (Data Export)
+
+SYMPTOM:
+Attempts to save the filtered Wireshark capture resulted in either saving only a single packet or saving a massive file that included thousands of irrelevant background network packets, despite an active display filter (tcp.port == 8000 || tcp.port == 8080 || udp.port == 9000).
+
+ROOT CAUSE:
+Using the standard "Save As" function, or exporting with the default "Captured" and "Selected packets only" packet range settings, forces Wireshark to save the entire raw capture or just the highlighted row, ignoring the applied display filter.
+
+RESOLUTION:
+Utilized the "File -> Export Specified Packets" feature. Under the Packet Range settings, toggled the top selection from "Captured" to "Displayed" and selected the "All packets" radio button on the left. This successfully isolated and extracted only the project-relevant packets into a clean .pcapng file for the final report.
+------------------------------------------------------------------------
