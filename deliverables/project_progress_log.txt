@@ -4,40 +4,45 @@ COMPUTER NETWORKS FINAL PROJECT (2-PERSON TEAM)
 ========================================================================
 
 [OVERALL PROJECT PLAN & STATUS]
-Phase 1: Web Server Implementation (TCP & UDP) -------------- [COMPLETED]
-Phase 2: Proxy Server Implementation (Forwarding & Caching) - [COMPLETED]
-Phase 3: Client Implementation (TCP HTTP & UDP QoS) --------- [COMPLETED]
-Phase 4: Multi-client Concurrency Testing ------------------- [COMPLETED]
-Phase 5: QoS & Wireshark Analysis --------------------------- [COMPLETED]
-Phase 6: Final Documentation & Presentation ----------------- [IN PROGRESS]
+Phase 1: Web Server Implementation (TCP & UDP) -------------- [COMPLETED][cite: 3]
+Phase 2: Proxy Server Implementation (Forwarding & Caching) - [COMPLETED][cite: 3]
+Phase 3: Client Implementation (TCP HTTP & UDP QoS) --------- [COMPLETED][cite: 3]
+Phase 4: Multi-client Concurrency Testing ------------------- [COMPLETED][cite: 3]
+Phase 5: QoS & Wireshark Analysis --------------------------- [COMPLETED][cite: 3]
+Phase 6: Final Documentation & Presentation ----------------- [IN PROGRESS][cite: 3]
 
 [SESSION ACCOMPLISHMENTS - DETAILED NOTES]
 
 1. Pre-Flight Architecture Review (Localhost)
-- Successfully verified full system operation via localhost loopback (127.0.0.1). 
-- Tested and confirmed standard TCP HTTP requests via terminal and standard web browsers.
-- Simulated and resolved the Cache Race Condition using a global `threading.Lock()` to prevent data corruption during multi-client concurrent tests.
+- Successfully verified full system operation via localhost loopback (127.0.0.1).[cite: 3]
+- Tested and confirmed standard TCP HTTP requests via terminal and standard web browsers.[cite: 3]
+- Simulated and resolved the Cache Race Condition using a global `threading.Lock()` to prevent data corruption during multi-client concurrent tests.[cite: 3]
 
 2. Code Optimization & Rubric Compliance Fixes
-- Addressed Browser Verification Failure (MIME Types): Integrated the built-in `mimetypes` library into `webserver.py` to dynamically set `Content-Type` headers (e.g., `text/css`, `image/png`), ensuring correct rendering in web browsers.
-- Re-verified terminal output strings to ensure exact compliance with the rubric constraints (e.g., matching the exact "[*] Server running..." phrasing).
+- Addressed Browser Verification Failure (MIME Types): Integrated the built-in `mimetypes` library into `webserver.py` to dynamically set `Content-Type` headers (e.g., `text/css`, `image/png`), ensuring correct rendering in web browsers.[cite: 3]
+- Re-verified terminal output strings to ensure exact compliance with the rubric constraints (e.g., matching the exact "[*] Server running..." phrasing).[cite: 3]
 
 3. Wireshark Capture Preparation
-- Configured Wireshark for localhost loopback testing and established the required Display Filter (`tcp.port == 8000 || tcp.port == 8080 || udp.port == 9000`).
-- Successfully executed a solo practice run, verifying the visibility of the TCP 3-Way Handshake, the HTTP GET/200 OK flow, and the UDP QoS Ping payloads. 
+- Configured Wireshark for localhost loopback testing and established the required Display Filter (`tcp.port == 8000 || tcp.port == 8080 || udp.port == 9000`).[cite: 3]
+- Successfully executed a solo practice run, verifying the visibility of the TCP 3-Way Handshake, the HTTP GET/200 OK flow, and the UDP QoS Ping payloads.[cite: 3]
 
 4. Final Documentation (PDF Report Drafting)
-- Consolidated 19 technical issues down to the Top 5 most advanced challenges for the Troubleshooting Section (Directory Traversal, Cache Locking, 504 Timeouts, Throughput Math, MIME Types).
-- Collaborated to integrate these Top 5 issues into the formal PDF report skeleton (Table 5.1).
-- Extensively revised Section 2 (System Implementation) and Section 5 (Conclusion & Recommendations) to explicitly include mandatory rubric keywords (Socket Mechanisms, Thread Management, Error Handling Strategies).
-- Established a placeholder structure for the remaining QoS Analysis and Wireshark sections, including instructions to generate a Cache HIT vs. Cache MISS comparison chart.
+- Consolidated 19 technical issues down to the Top 5 most advanced challenges for the Troubleshooting Section (Directory Traversal, Cache Locking, 504 Timeouts, Throughput Math, MIME Types).[cite: 3]
+- Collaborated to integrate these Top 5 issues into the formal PDF report skeleton (Table 5.1).[cite: 3]
+- Extensively revised Section 2 (System Implementation) and Section 5 (Conclusion & Recommendations) to explicitly include mandatory rubric keywords (Socket Mechanisms, Thread Management, Error Handling Strategies).[cite: 3]
+- Established a placeholder structure for the remaining QoS Analysis and Wireshark sections, including instructions to generate a Cache HIT vs. Cache MISS comparison chart.[cite: 3]
 
-[NEXT STEPS FOR DEMO DAY (WITH TEAMMATE)]
-- Meet up and connect both laptops to the same LAN (Wi-Fi or Hotspot).
-- Disable Windows Defender Firewall (Private Network) on the Host laptop to allow inbound traffic on ports 8000, 8080, and 9000.
-- Execute the 8-Scene "Final Demo Script" while screen recording.
-- Extract the required Wireshark screenshots from the video capture.
+5. Demo Day Execution & LAN Connectivity Testing
+- Transitioned from localhost to a two-laptop Local Area Network (LAN) setup.
+- Encountered and resolved a [WinError 10060] connection timeout by dynamically mapping the client and proxy '192.XXX.XXX.XXX' variables to the host's actual IPv4 address via ipconfig.
+- Implemented secure Windows Defender Inbound Rules for TCP (8000, 8080) and UDP (9000) instead of completely disabling the firewall.
+- Successfully executed the 8-Scene Final Demo Script while screen recording.
+- Successfully exported the filtered Wireshark capture (.pcapng) using the 'Export Specified Packets' feature, ensuring only displayed packets were saved without raw background noise.
+
+[NEXT STEPS FOR REPORT SUBMISSION]
+- Extract the required Wireshark and terminal screenshots from the video capture.
 - Copy the final UDP QoS statistics (RTT, Jitter, Throughput) from the Client terminal into the PDF.
 - Build the "Cache HIT vs. MISS" response time bar chart in the PDF.
+- Compile the Presentation Slide Deck based on the 10-slide outline.
 - REMOVE placeholder instruction text from the final PDF and submit!
 ========================================================================
