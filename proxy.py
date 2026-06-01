@@ -6,7 +6,7 @@ from datetime import datetime
 
 HOST = '0.0.0.0'
 PROXY_PORT = 8080
-WEBSERVER_HOST = '192.168.110.240' 
+WEBSERVER_HOST = '127.0.0.1' 
 WEBSERVER_PORT = 8000
 
 cache_lock = threading.Lock()

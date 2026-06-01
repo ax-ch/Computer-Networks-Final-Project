@@ -4,9 +4,9 @@ import time
 import statistics
 import threading
 
-PROXY_IP = '192.168.110.240'
+PROXY_IP = '127.0.0.1'
 PROXY_PORT = 8080
-WEBSERVER_IP = '192.168.110.240'
+WEBSERVER_IP = '127.0.0.1'
 WEBSERVER_PORT = 9000
 BUFFER_SIZE = 4096
 
