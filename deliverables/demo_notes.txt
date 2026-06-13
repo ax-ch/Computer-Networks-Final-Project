@@ -23,7 +23,11 @@ Resolution: No, it is actually perfect. Forcing 5 simultaneous Cache HITs is the
 Concern: Why is 5 files considered "Heavy Load" but 50 files is only "Moderate"?
 Resolution: The 50-file loop is Sequential (a marathon). The server processes one request at a time, so the queue never gets overwhelmed. The 5-file script is Concurrent (a sprint). All 5 requests hit at the exact same millisecond, forcing the CPU to context-switch instantly, fight over Python's Global Interpreter Lock (GIL), and create a massive instantaneous delay for the UDP packets.
 
-4. QOS MATHEMATICS & JITTER SPIKES
+4. QOS MATHEMATICS, JITTER SPIKES & "THE ANOMALY"
+Concern: Why did our Moderate Load test result in higher jitter (33.69 ms) than our Heavy Load test (15.39 ms)? Isn't that backward?
+Resolution: This is a textbook "anomaly" that proves our test scenarios worked perfectly to test two different bottlenecks. The Moderate Load was an I/O Bottleneck test (30 sequential Cache MISSES forcing slow disk reads and constant socket creation/teardown). The Heavy Load was a Concurrency Bottleneck test (5 simultaneous Cache HITs served rapidly from memory). Disk I/O and socket teardowns are physically slower and more chaotic than memory reads, which causes the UDP ping to experience a massive queue delay during the Moderate test.
+
+// Old data
 Concern: My jitter bounced around (7.81ms -> 32.71ms -> 13.72ms) instead of just going straight up. Is that wrong?
 Resolution: That is textbook-perfect data. The spike to 32.71ms proves the UDP packet successfully hit the concurrent TCP traffic jam. The recovery back to 13.72ms proves the Web Server is healthy and properly clearing its thread queue. Jitter measures variance (inconsistency), so spikes and drops are exactly what you want to see under load.
 
