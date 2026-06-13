@@ -27,7 +27,7 @@ Phase 6: Final Documentation & Presentation ----------------- [IN PROGRESS]
 - Successfully executed a solo practice run, verifying the visibility of the TCP 3-Way Handshake, the HTTP GET/200 OK flow, and the UDP QoS Ping payloads.
 
 4. Final Documentation (PDF Report Drafting)
-- Consolidated 19 technical issues down to the Top 5 most advanced challenges for the Troubleshooting Section (Directory Traversal, Cache Locking, 504 Timeouts, Throughput Math, MIME Types).
+- Consolidated 23 technical issues down to the Top 5 most advanced challenges for the Troubleshooting Section (Directory Traversal, Cache Locking, 504 Timeouts, Throughput Math, MIME Types).
 - Collaborated to integrate these Top 5 issues into the formal PDF report skeleton (Table 5.1).
 - Extensively revised Section 2 (System Implementation) and Section 5 (Conclusion & Recommendations) to explicitly include mandatory rubric keywords (Socket Mechanisms, Thread Management, Error Handling Strategies).
 - Established a placeholder structure for the remaining QoS Analysis and Wireshark sections, including instructions to generate a Cache HIT vs. Cache MISS comparison chart.
