@@ -1,0 +1,35 @@
+========================================================================
+DEMO NOTES (Esp. on the second capture -- load_tests.pcapng)
+========================================================================
+
+1. LOAD GENERATION STRATEGY
+Concern: Why should the Host (Axella) generate the TCP load instead of the Client (Anita) doing everything?
+Resolution: Splitting the load proves true multi-client concurrency (handling multiple IPs simultaneously). It also prevents Anita's machine from becoming a hardware bottleneck, ensuring the measured UDP delay is strictly caused by the Web Server's queue, not the Client's CPU.
+
+Concern: How many times should the UDP script be run during the load?
+Resolution: Exactly once per test. The script is programmed to automatically send a loop of 10 packets. Anita just needs to execute it at the exact moment Axella is applying the TCP stress.
+
+2. THE CACHE TRAP & BYPASSING THE PROXY
+Concern: The Moderate Load numbers looked exactly like the Idle numbers. Why didn't the server struggle?
+Resolution: We fell into the "Cache Trap." Refreshing /index.html repeatedly meant the Proxy Server was handling 100% of the traffic from its local cache. The Web Server (where the UDP test runs) sat completely idle.
+
+Concern: How do we force a true Moderate Load if the browser just caches everything?
+Resolution: We abandoned the browser for data gathering. Axella used a Command Prompt loop (FOR /L %i IN (1,1,50)...) to request 50 fake files. Because the files didn't exist, the Proxy suffered 50 consecutive Cache MISSES, forcing it to hammer the Web Server and create a real traffic jam.
+
+Concern: During the Heavy Load stress test, is it bad if all 5 clients ask for the same cached file?
+Resolution: No, it is actually perfect. Forcing 5 simultaneous Cache HITs is the ultimate test of the global threading.Lock(), proving the proxy won't corrupt data or crash when multiple threads read/write at the exact same millisecond.
+
+3. NETWORK PHYSICS: SEQUENTIAL VS. CONCURRENT LOAD
+Concern: Why is 5 files considered "Heavy Load" but 50 files is only "Moderate"?
+Resolution: The 50-file loop is Sequential (a marathon). The server processes one request at a time, so the queue never gets overwhelmed. The 5-file script is Concurrent (a sprint). All 5 requests hit at the exact same millisecond, forcing the CPU to context-switch instantly, fight over Python's Global Interpreter Lock (GIL), and create a massive instantaneous delay for the UDP packets.
+
+4. QOS MATHEMATICS & JITTER SPIKES
+Concern: My jitter bounced around (7.81ms -> 32.71ms -> 13.72ms) instead of just going straight up. Is that wrong?
+Resolution: That is textbook-perfect data. The spike to 32.71ms proves the UDP packet successfully hit the concurrent TCP traffic jam. The recovery back to 13.72ms proves the Web Server is healthy and properly clearing its thread queue. Jitter measures variance (inconsistency), so spikes and drops are exactly what you want to see under load.
+
+5. WIRESHARK BLINDSPOTS & THE 830-PACKET CAPTURE
+Concern: My first Wireshark capture only had 60 packets (just the UDP traffic). Where did all the TCP traffic go?
+Resolution: The "Loopback Blindspot." Axella was running the TCP load scripts on the same machine hosting the server. The OS routed that traffic internally through 127.0.0.1 (Loopback), while Wireshark was only looking at the Wi-Fi card (where Anita's UDP packets were entering).
+
+Concern: If I capture both the Wi-Fi and the Loopback adapters at the same time, won't I get duplicate packets?
+Resolution: No. Packets only travel the paths they need to. The internal TCP handshakes never go out over the Wi-Fi card, and the external UDP pings never cross the internal Loopback adapter. Selecting both interfaces in Wireshark seamlessly stitches the two separate cameras into one perfect 830-packet timeline.
