@@ -6,18 +6,18 @@ TEAM ROLES:
 - CLIENT (Anita): Runs Client.py and Browser tests.
 
 ========================================================================
-PART 1: PRE-FLIGHT CHECKLIST (Do this BEFORE hitting record)
+PART 1: PRE-FLIGHT CHECKLIST (Do this BEFORE hitting record/presenting)
 ========================================================================
 [ ] 1. Connect both laptops to the exact same Wi-Fi network or mobile hotspot.
 [ ] 2. HOST: Open Command Prompt, run `ipconfig`, and write down your IPv4 Address (e.g., 192.168.x.x).
 [ ] 3. CLIENT: Open `client.py` and change PROXY_IP and WEBSERVER_IP to the HOST's IPv4 Address.
-[ ] 4. HOST: Temporarily turn OFF Windows Defender Firewall (Private Network) so the client can connect.
+[ ] 4. HOST: Ensure Windows Defender Inbound Rules for TCP (8000, 8080) and UDP (9000) are active.
 [ ] 5. HOST: Delete the `cache` folder in your project directory (starts fresh).
-[ ] 6. HOST: Open Wireshark, select your Wi-Fi interface, and apply the display filter:
-             tcp.port == 8000 || tcp.port == 8080 || udp.port == 9000
+[ ] 6. HOST: Open Wireshark. Hold 'Ctrl' and click BOTH the "Wi-Fi" adapter AND the "Adapter for loopback traffic capture". 
+[ ] 7. HOST: Apply the display filter: tcp.port == 8000 || tcp.port == 8080 || udp.port == 9000
 
 ========================================================================
-PART 2: THE TECHNICAL DEMO (The Screen Recording)
+PART 2: THE TECHNICAL DEMO (The Screen Recording / Live Execution)
 ========================================================================
 SCENE 1: STARTUP
 - HOST: Start Wireshark packet capture.
@@ -39,37 +39,35 @@ SCENE 4: ERROR HANDLING (404)
 - CLIENT: Terminal -> Run `python client.py -mode tcp -file /pizza.html`
 - HOST: Point out the "404 Not Found" log on the Server and the custom HTML error on the Client.
 
-SCENE 5: QUALITY OF SERVICE (UDP)
+SCENE 5: QUALITY OF SERVICE (UDP - IDLE NETWORK)
 - CLIENT: Terminal -> Run `python client.py -mode udp`
 - HOST: Point out the "Echoed packet" logs on the Server terminal.
 - CLIENT: Show the final statistics (RTT, Jitter, Throughput, Packet Loss).
 
-SCENE 6: STRESS TEST (CONCURRENT)
+SCENE 6: STRESS TEST (CONCURRENT CACHE HITS)
 - CLIENT: Terminal -> Run `python client.py -mode multi -file /index.html`
-- HOST: Show the Proxy and Server terminals handling 5 simultaneous threads without crashing.
+- HOST: Show the Proxy and Server terminals handling 5 simultaneous threads without crashing (Proves the threading.Lock works).
 
 SCENE 7: PROXY ERROR PROPAGATION (502 & 504)
 - HOST: Terminal 1 -> Press CTRL+C to kill the Web Server.
 - CLIENT: Terminal -> Run `python client.py -mode tcp -file /tcpip.html`
 - HOST: Point out the Proxy sending a "502 Bad Gateway" because the server is dead.
-*(Note: If the grader specifically asks for the 504 Gateway Timeout, explain that the proxy is configured with a 5.0-second socket timeout to trigger it if the server hangs).*
+*(Note: If asked about 504 Gateway Timeout, explain the proxy has a 5.0s socket timeout if the server hangs).*
 
-SCENE 8: WRAP UP
-- HOST: Stop Wireshark capture and save the file.
-- HOST: Turn Windows Firewall back ON.
-- HOST: Extract screenshots from the video for the final PDF report.
+SCENE 8: DEMO WRAP UP
+- HOST: Stop Wireshark capture and save as 'Demo_Capture.pcapng'.
 
 ========================================================================
-PART 3: THE PRESENTATION (Slide Deck Flow)
+PART 3: OFFLINE DATA GATHERING (For the PDF Report & 830-Packet Wireshark)
 ========================================================================
-SLIDE 1: Title & Team Introduction
-SLIDE 2: Project Overview & Architecture (Show the topology of Client -> Proxy -> Server).
-SLIDE 3: Play the Pre-Recorded Demo Video (Have a pivot script ready if attempting live).
-SLIDE 4: TCP Implementation & Caching (Explain how the proxy saves files and speeds up responses).
-SLIDE 5: Multi-threading & Concurrency (Explain the threading locks and stress test success).
-SLIDE 6: QoS Analysis - The Math (Show the formulas for RTT, Jitter, and Throughput).
-SLIDE 7: QoS Analysis - The Data (Compare Idle Network vs. Loaded Network stats).
-SLIDE 8: Wireshark Proof (Show the 3-Way Handshake and HTTP GET screenshots).
-SLIDE 9: Troubleshooting & Optimization (Highlight the Dynamic MIME Types fix and UDP Echo print).
-SLIDE 10: Conclusion & Q&A.
-========================================================================
+*Note: Do this off-camera to gather the exact numbers for your QoS tables.*
+
+PREP: 
+- HOST restarts Web Server and Proxy Server. 
+- HOST deletes the `cache` folder.
+- HOST starts a NEW Wireshark capture (Wi-Fi + Loopback selected).
+
+TEST 1: IDLE LOAD (Light)
+- HOST: Does nothing.
+- CLIENT: Runs `python client.py -mode udp`.
+- CLIENT: Copy final stats to Notepad (IDLE).
