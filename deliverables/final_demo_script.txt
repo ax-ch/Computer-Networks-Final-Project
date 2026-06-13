@@ -36,7 +36,7 @@ SCENE 3: BROWSER VERIFICATION (MIME TYPES FIX)
 - HOST/CLIENT: Show the web page rendering perfectly with colors and images.
 
 SCENE 4: ERROR HANDLING (404)
-- CLIENT: Terminal -> Run `python client.py -mode tcp -file /pizza.html`
+- CLIENT: Terminal -> Run `python client.py -mode tcp -file /burger.html`
 - HOST: Point out the "404 Not Found" log on the Server and the custom HTML error on the Client.
 
 SCENE 5: QUALITY OF SERVICE (UDP - IDLE NETWORK)
@@ -55,7 +55,7 @@ SCENE 7: PROXY ERROR PROPAGATION (502 & 504)
 *(Note: If asked about 504 Gateway Timeout, explain the proxy has a 5.0s socket timeout if the server hangs).*
 
 SCENE 8: DEMO WRAP UP
-- HOST: Stop Wireshark capture and save as 'Demo_Capture.pcapng'.
+- HOST: Stop Wireshark capture and save as 'demo.pcapng'.
 
 ========================================================================
 PART 3: OFFLINE DATA GATHERING (For the PDF Report & 830-Packet Wireshark)
@@ -71,3 +71,32 @@ TEST 1: IDLE LOAD (Light)
 - HOST: Does nothing.
 - CLIENT: Runs `python client.py -mode udp`.
 - CLIENT: Copy final stats to Notepad (IDLE).
+
+TEST 2: MODERATE LOAD (Sequential Cache Misses)
+- HOST: Opens Terminal 3. Types: `FOR /L %i IN (1,1,30) DO python client.py -mode tcp -file /fake%i.html`
+- HOST: Hits Enter. Counts "One Mississippi".
+- CLIENT: Hits Enter on `python client.py -mode udp`.
+- CLIENT: Copy final stats to Notepad (MODERATE).
+
+TEST 3: HEAVY LOAD (Concurrent Cache Misses)
+- HOST: Deletes the `cache` folder again!
+- HOST: Types `python client.py -mode multi -file /tcpip.html` in Terminal 3.
+- HOST: Says "Go!" and hits Enter.
+- CLIENT: Hits Enter on `python client.py -mode udp` at the exact same time.
+- CLIENT: Copy final stats to Notepad (HEAVY - Look for the Jitter spike!).
+- HOST: Stop Wireshark and save as 'load_tests.pcapng'.
+
+========================================================================
+PART 4: THE PRESENTATION (Slide Deck Flow)
+========================================================================
+SLIDE 1: Title & Team Introduction
+SLIDE 2: Project Overview & Architecture (Show the topology of Client -> Proxy -> Server).
+SLIDE 3: Play the Pre-Recorded Demo Video (Have a pivot script ready if attempting live).
+SLIDE 4: TCP Implementation & Caching (Explain how the proxy saves files and speeds up responses).
+SLIDE 5: Multi-threading & Concurrency (Explain the threading locks and stress test success).
+SLIDE 6: QoS Analysis - The Math (Show the formulas for RTT, Jitter, and Throughput).
+SLIDE 7: QoS Analysis - The Data (Compare Idle Network vs. Loaded Network stats from Part 3).
+SLIDE 8: Wireshark Proof (Show the TCP Concurrent Streams and UDP Echo screenshots).
+SLIDE 9: Troubleshooting & Optimization (Highlight the Dynamic MIME Types fix and Directory Traversal block).
+SLIDE 10: Conclusion & Q&A.
+========================================================================
