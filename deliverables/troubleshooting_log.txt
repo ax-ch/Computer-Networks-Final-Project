@@ -296,7 +296,7 @@ Imported the built-in Python `mimetypes` library. Modified the HTTP 200 OK respo
 ISSUE #020
 ------------------------------------------------------------------------
 CONTEXT:
-Phase 4 - Multi-client Concurrency Testing & LAN Setup
+Multi-client Concurrency Testing & LAN Setup
 
 SYMPTOM:
 When attempting to connect the client laptop to the host laptop over the local network, the terminal threw an error: "[WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond".
@@ -313,7 +313,7 @@ Updated the PROXY_IP and WEBSERVER_IP variables in client.py, and the WEBSERVER_
 ISSUE #021
 ------------------------------------------------------------------------
 CONTEXT:
-Phase 5 - QoS & Wireshark Analysis (Data Export)
+QoS & Wireshark Analysis (Data Export)
 
 SYMPTOM:
 Attempts to save the filtered Wireshark capture resulted in either saving only a single packet or saving a massive file that included thousands of irrelevant background network packets, despite an active display filter (tcp.port == 8000 || tcp.port == 8080 || udp.port == 9000).
@@ -323,4 +323,35 @@ Using the standard "Save As" function, or exporting with the default "Captured" 
 
 RESOLUTION:
 Utilized the "File -> Export Specified Packets" feature. Under the Packet Range settings, toggled the top selection from "Captured" to "Displayed" and selected the "All packets" radio button on the left. This successfully isolated and extracted only the project-relevant packets into a clean .pcapng file for the final report.
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+ISSUE #022
+------------------------------------------------------------------------
+CONTEXT:
+QoS Measurement (Moderate Load Testing)
+
+SYMPTOM:
+UDP QoS statistics (RTT, Jitter) for the Moderate Load test were nearly identical to the Idle network test (e.g., ~37ms avg RTT vs ~38ms), indicating the Web Server was not actually experiencing any network stress despite the host rapidly refreshing 3 browser tabs.
+
+ROOT CAUSE:
+The "Cache Trap." Because the Host was refreshing a previously accessed page (`/index.html`), the Proxy Server intercepted 100% of the requests and served them locally (Cache HIT). Consequently, the Web Server (which hosts the UDP Echo port 9000) received zero TCP traffic and remained completely idle.
+
+RESOLUTION:
+Abandoned manual browser refreshes for load generation. Utilized a Windows Command Prompt loop (`FOR /L %i IN (1,1,30) DO python client.py -mode tcp -file /fake%i.html`) to request 30 unique, non-existent files. This bypassed the proxy cache entirely, forcing 30 consecutive Cache MISSES and successfully creating a genuine TCP bottleneck at the Web Server to measure.
+
+------------------------------------------------------------------------
+ISSUE #023
+------------------------------------------------------------------------
+CONTEXT:
+Wireshark Analysis (Concurrency Proof & Packet Capture)
+
+SYMPTOM:
+The initial Wireshark capture for the concurrent load tests only contained 60 packets (representing exactly 30 UDP pings and 30 UDP echoes). The capture was entirely missing the hundreds of expected TCP 3-way handshakes and concurrent HTTP streams.
+
+ROOT CAUSE:
+The "Loopback Blindspot." Because the TCP load-generating scripts were executed directly on the Host machine, the operating system routed that specific traffic internally via the Loopback adapter (`127.0.0.1`). Wireshark was solely monitoring the external Wi-Fi interface, causing it to completely miss the internal TCP traffic jam.
+
+RESOLUTION:
+Reconfigured Wireshark to monitor multiple network interfaces simultaneously. Held `Ctrl` to select both the active "Wi-Fi" interface and the "Adapter for loopback traffic capture" before initiating the capture. This successfully stitched the external UDP pings and internal TCP streams into a unified, 830-packet timeline for the final report.
 ------------------------------------------------------------------------
