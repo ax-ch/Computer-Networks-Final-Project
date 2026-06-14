@@ -29,7 +29,7 @@ The current implementation does not include cache expiration mechanisms or TLS/S
 
 Authors
 
-* Axella N. H
-* Anita W. M
+* Axella N. H.
+* Anita W. M.
 
 Computer Networks – Final Project
