@@ -9,6 +9,8 @@ PROXY_PORT = 8080
 WEBSERVER_HOST = '127.0.0.1' 
 WEBSERVER_PORT = 8000
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 cache_lock = threading.Lock()
 
 def get_timestamp():
@@ -77,25 +79,41 @@ def handle_client(client_socket, client_address):
 
     except ConnectionRefusedError:
         print(f"[{get_timestamp()}] [PROXY] ERROR: Web server is down! Sending 502 Bad Gateway.")
-        error_body = "<h1>502 Bad Gateway</h1><p>The web server is offline.</p>"
+
+        try:
+            error_file_path = os.path.join(BASE_DIR, 'status', '502.html')
+            with open(error_file_path, 'rb') as f:
+                error_body = f.read()
+        except FileNotFoundError:
+            error_body = b"<h1>502 Bad Gateway</h1><p>The web server is offline.</p>"
+            
         error_msg = (
             "HTTP/1.1 502 Bad Gateway\r\n"
             "Content-Type: text/html; charset=utf-8\r\n"
-            f"Content-Length: {len(error_body.encode('utf-8'))}\r\n"
+            f"Content-Length: {len(error_body)}\r\n"
             "Connection: close\r\n\r\n"
-        )
-        client_socket.sendall((error_msg + error_body).encode('utf-8'))
+        ).encode('utf-8')
+        
+        client_socket.sendall(error_msg + error_body)
 
     except socket.timeout:
         print(f"[{get_timestamp()}] [PROXY] ERROR: Web server timed out! Sending 504 Gateway Timeout.")
-        error_body = "<h1>504 Gateway Timeout</h1><p>The web server took too long to respond.</p>"
+
+        try:
+            error_file_path = os.path.join(BASE_DIR, 'status', '504.html')
+            with open(error_file_path, 'rb') as f:
+                error_body = f.read()
+        except FileNotFoundError:
+            error_body = b"<h1>504 Gateway Timeout</h1><p>The web server took too long to respond.</p>"
+            
         error_msg = (
             "HTTP/1.1 504 Gateway Timeout\r\n"
             "Content-Type: text/html; charset=utf-8\r\n"
-            f"Content-Length: {len(error_body.encode('utf-8'))}\r\n"
+            f"Content-Length: {len(error_body)}\r\n"
             "Connection: close\r\n\r\n"
-        )
-        client_socket.sendall((error_msg + error_body).encode('utf-8'))
+        ).encode('utf-8')
+        
+        client_socket.sendall(error_msg + error_body)
 
     except Exception as e:
         print(f"[{get_timestamp()}] [PROXY] General Error with {client_address[0]}: {e}")

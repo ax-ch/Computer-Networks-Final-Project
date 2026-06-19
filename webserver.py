@@ -70,26 +70,41 @@ def handle_tcp_client(client_socket, client_address):
         except FileNotFoundError:
             print(f"[{get_timestamp()}] [TCP] {client_address[0]} requested {requested_path} - 404 Not Found")
             
-            error_body = "<h1>404 - File Not Found</h1><p>Check your URL and try again.</p>"
+            try:
+                error_file_path = os.path.join(BASE_DIR, 'status', '404.html')
+                with open(error_file_path, 'rb') as f:
+                    error_body = f.read()
+            except FileNotFoundError:
+                error_body = b"<h1>404 - File Not Found</h1><p>Check your URL and try again.</p>"
+                
             error_headers = (
                 "HTTP/1.1 404 Not Found\r\n"
                 "Content-Type: text/html; charset=utf-8\r\n"
-                f"Content-Length: {len(error_body.encode('utf-8'))}\r\n"
+                f"Content-Length: {len(error_body)}\r\n"
                 "Connection: close\r\n\r\n"
-            )
-            client_socket.sendall((error_headers + error_body).encode('utf-8'))
+            ).encode('utf-8')
+            
+            client_socket.sendall(error_headers + error_body)
 
     except Exception as e:
         print(f"[{get_timestamp()}] [TCP] Error with client {client_address[0]}: {e}")
         try:
-            error_body = "<h1>500 - Internal Server Error</h1><p>Something went wrong on the server.</p>"
+            try:
+                error_file_path = os.path.join(BASE_DIR, 'status', '500.html')
+                with open(error_file_path, 'rb') as f:
+                    error_body = f.read()
+            except FileNotFoundError:
+                error_body = b"<h1>500 - Internal Server Error</h1><p>Something went wrong on the server.</p>"
+                
             error_headers = (
                 "HTTP/1.1 500 Internal Server Error\r\n"
                 "Content-Type: text/html; charset=utf-8\r\n"
-                f"Content-Length: {len(error_body.encode('utf-8'))}\r\n"
+                f"Content-Length: {len(error_body)}\r\n"
                 "Connection: close\r\n\r\n"
-            )
-            client_socket.sendall((error_headers + error_body).encode('utf-8'))
+            ).encode('utf-8')
+            
+            client_socket.sendall(error_headers + error_body)
+            
         except Exception as send_error:
             print(f"[{get_timestamp()}] [TCP] Failed to send 500 response to {client_address[0]}: {send_error}")
     
@@ -122,7 +137,6 @@ def start_udp_server():
             print(f"[{get_timestamp()}] [UDP] Error: {e}")
 
 if __name__ == "__main__":
-    # RESTORED RUBRIC STRING
     print(f"[{get_timestamp()}] [*] Server running on port {TCP_PORT}/{UDP_PORT}")
     print(f"[{get_timestamp()}] [*] Serving files from: {BASE_DIR}")
 
