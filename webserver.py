@@ -28,6 +28,7 @@ def handle_tcp_client(client_socket, client_address):
         
         try:
             requested_path = first_line.split(' ')[1]
+            
         except IndexError:
             print(f"[{get_timestamp()}] [TCP] Malformed request received from {client_address[0]}.")
             return
