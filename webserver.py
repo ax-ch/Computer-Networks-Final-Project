@@ -91,11 +91,14 @@ def handle_tcp_client(client_socket, client_address):
 
     except Exception as e:
         print(f"[{get_timestamp()}] [TCP] Error with client {client_address[0]}: {e}")
+
         try:
             try:
                 error_file_path = os.path.join(BASE_DIR, 'status', '500.html')
+
                 with open(error_file_path, 'rb') as f:
                     error_body = f.read()
+                
             except FileNotFoundError:
                 error_body = b"<h1>500 - Internal Server Error</h1><p>Something went wrong on the server.</p>"
                 
@@ -133,9 +136,11 @@ def start_udp_server():
     while True:
         try:
             data, client_address = udp_socket.recvfrom(1024)
+
             if data:
                 print(f"[{get_timestamp()}] [UDP] Echoed packet back to {client_address[0]}")
                 udp_socket.sendto(data, client_address)
+            
         except Exception as e:
             print(f"[{get_timestamp()}] [UDP] Error: {e}")
 
@@ -154,5 +159,6 @@ if __name__ == "__main__":
     try:
         while True:
             pass
+        
     except KeyboardInterrupt:
         print(f"\n[{get_timestamp()}] [*] Shutting down servers.")
