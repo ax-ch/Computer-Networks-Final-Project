@@ -73,8 +73,10 @@ def handle_tcp_client(client_socket, client_address):
             
             try:
                 error_file_path = os.path.join(BASE_DIR, 'status', '404.html')
+
                 with open(error_file_path, 'rb') as f:
                     error_body = f.read()
+                
             except FileNotFoundError:
                 error_body = b"<h1>404 - File Not Found</h1><p>Check your URL and try again.</p>"
                 
