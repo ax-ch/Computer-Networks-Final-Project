@@ -26,12 +26,14 @@ def handle_client(client_socket, client_address):
     
     try:
         request = client_socket.recv(4096)
+        
         if not request:
             return
 
         try:
             request_str = request.decode('utf-8')
             requested_path = request_str.split('\r\n')[0].split(' ')[1]
+
             if requested_path == '/':
                 requested_path = '/index.html'
                 
@@ -58,10 +60,13 @@ def handle_client(client_socket, client_address):
         server_socket.sendall(request)
         
         response = b""
+
         while True:
             chunk = server_socket.recv(4096)
+
             if len(chunk) > 0:
                 response += chunk
+
             else:
                 break
                 
@@ -82,8 +87,10 @@ def handle_client(client_socket, client_address):
 
         try:
             error_file_path = os.path.join(BASE_DIR, 'status', '502.html')
+
             with open(error_file_path, 'rb') as f:
                 error_body = f.read()
+
         except FileNotFoundError:
             error_body = b"<h1>502 Bad Gateway</h1><p>The web server is offline.</p>"
             
@@ -101,8 +108,10 @@ def handle_client(client_socket, client_address):
 
         try:
             error_file_path = os.path.join(BASE_DIR, 'status', '504.html')
+
             with open(error_file_path, 'rb') as f:
                 error_body = f.read()
+
         except FileNotFoundError:
             error_body = b"<h1>504 Gateway Timeout</h1><p>The web server took too long to respond.</p>"
             
@@ -120,8 +129,10 @@ def handle_client(client_socket, client_address):
         
     finally:
         client_socket.close()
+
         try:
             server_socket.close()
+            
         except:
             pass
 
